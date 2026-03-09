@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, func
+from sqlalchemy import ForeignKey, func, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -26,7 +26,7 @@ class Membership(Base):
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), primary_key=True)
     org_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), primary_key=True)
     role: Mapped[Role] = mapped_column(default=Role.MEMBER)
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     user: Mapped[User] = relationship(back_populates="memberships", lazy="raise")
     organization: Mapped[Organization] = relationship(back_populates="memberships", lazy="raise")

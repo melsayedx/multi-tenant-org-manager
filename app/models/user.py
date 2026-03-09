@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
-from sqlalchemy import CHAR, Computed, Index, String, func
+from sqlalchemy import CHAR, Computed, Index, String, func, DateTime
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from uuid_utils import uuid7
@@ -23,9 +23,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     full_name: Mapped[str] = mapped_column(String(64))
     password: Mapped[str] = mapped_column(CHAR(128))
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
-        server_default=func.now(), onupdate=utcnow
+        DateTime(timezone=True), server_default=func.now(), onupdate=utcnow
     )
     search_vector: Mapped[Optional[Any]] = mapped_column(
         TSVECTOR,
