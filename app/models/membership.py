@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, func, DateTime
+from sqlalchemy import ForeignKey, Index, func, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -30,3 +30,7 @@ class Membership(Base):
 
     user: Mapped[User] = relationship(back_populates="memberships", lazy="raise")
     organization: Mapped[Organization] = relationship(back_populates="memberships", lazy="raise")
+
+    __table_args__ = (
+        Index("ix_membership_org_created", "org_id", "created_at"),
+    )

@@ -24,6 +24,6 @@ class AuthService:
         self, data: LoginRequest, secret_key: str, expires_minutes: int
     ) -> str:
         user = await self.user_repo.get_by_email(data.email)
-        if not user or not verify_password(data.password, user.password):
+        if not user or not verify_password(data.password, user.password.strip()):
             raise NotAuthenticatedException("Invalid email or password")
         return create_jwt(user.id, secret_key, expires_minutes)

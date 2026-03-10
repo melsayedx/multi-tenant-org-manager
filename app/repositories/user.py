@@ -26,9 +26,9 @@ class UserRepository:
 
     async def search_in_org(
         self, org_id: UUID, query: str, limit: int, offset: int
-    ) -> tuple[list[User], int]:
+    ) -> tuple[list, int]:
         base = (
-            select(User)
+            select(User, Membership.role)
             .join(Membership, Membership.user_id == User.id)
             .where(Membership.org_id == org_id)
             .where(User.search_vector.op("@@")(func.plainto_tsquery("english", query)))
@@ -38,4 +38,4 @@ class UserRepository:
         )
         total = count_result.scalar() or 0
         result = await self.session.execute(base.offset(offset).limit(limit))
-        return list(result.scalars().all()), total
+        return list(result.all()), total

@@ -1,9 +1,11 @@
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from uuid import UUID
 
 import jwt
 from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
+from argon2.exceptions import VerificationError, VerifyMismatchError
+
+from app.core.utils import utcnow
 
 _ph = PasswordHasher()
 
@@ -15,12 +17,12 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     try:
         return _ph.verify(hashed, password)
-    except VerifyMismatchError:
+    except (VerifyMismatchError, VerificationError):
         return False
 
 
 def create_jwt(user_id: UUID, secret_key: str, expires_minutes: int = 30) -> str:
-    now = datetime.now(timezone.utc)
+    now = utcnow()
     payload = {
         "sub": str(user_id),
         "iat": now,
