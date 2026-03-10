@@ -22,10 +22,27 @@ docker compose up --build
 
 ### Run Tests
 
+**Option A — on the host (recommended for development)**
+
+Requires Docker to be running (testcontainers spins up a temporary Postgres container automatically).
+
 ```bash
-pytest                  # full suite (unit + integration) with coverage
-pytest tests/unit/      # unit tests only (no DB required)
+uv sync --extra dev          # install dev dependencies
+uv run pytest                # full suite (unit + integration) with coverage
+uv run pytest tests/unit/    # unit tests only — no DB or Docker needed
 ```
+
+**Option B — inside Docker**
+
+Uses the same `db` service as the server, so no testcontainers overhead.
+
+```bash
+docker compose --profile test run --rm test          # full suite
+docker compose --profile test run --rm test pytest tests/unit/
+docker compose --profile test run --rm test pytest -v
+```
+
+> The `test` service uses the `profiles: [test]` flag, so it is never started by `docker compose up` accidentally.
 
 ---
 
