@@ -22,12 +22,12 @@ from httpx import AsyncClient
 async def _register_and_login(client: AsyncClient, email: str, name: str) -> str:
     await client.post(
         "/auth/register",
-        json={"email": email, "password": "StrongPass123", "full_name": name},
+        json={"email": email, "password": "StrongPass123!", "full_name": name},
     )
     return (
         await client.post(
             "/auth/login",
-            json={"email": email, "password": "StrongPass123"},
+            json={"email": email, "password": "StrongPass123!"},
         )
     ).json()["access_token"]
 

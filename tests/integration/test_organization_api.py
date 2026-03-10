@@ -23,7 +23,7 @@ async def test_invite_user_success(client: AsyncClient, auth_headers: dict):
 
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123", "full_name": "Member"},
+        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
     )
 
     resp = await client.post(
@@ -54,7 +54,7 @@ async def test_invite_existing_member_returns_409(client: AsyncClient, auth_head
 
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123", "full_name": "Member"},
+        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -77,7 +77,7 @@ async def test_invite_requires_admin(client: AsyncClient, auth_headers: dict):
 
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123", "full_name": "Member"},
+        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -87,14 +87,14 @@ async def test_invite_requires_admin(client: AsyncClient, auth_headers: dict):
     member_token = (
         await client.post(
             "/auth/login",
-            json={"email": "member@test.com", "password": "StrongPass123"},
+            json={"email": "member@test.com", "password": "StrongPass123!"},
         )
     ).json()["access_token"]
     member_headers = {"Authorization": f"Bearer {member_token}"}
 
     await client.post(
         "/auth/register",
-        json={"email": "third@test.com", "password": "StrongPass123", "full_name": "Third"},
+        json={"email": "third@test.com", "password": "StrongPass123!", "full_name": "Third"},
     )
     resp = await client.post(
         f"/organization/{org_id}/user",
@@ -112,13 +112,13 @@ async def test_non_member_cannot_invite(client: AsyncClient, auth_headers: dict)
     outsider_token = (
         await client.post(
             "/auth/register",
-            json={"email": "outsider@test.com", "password": "StrongPass123", "full_name": "Out"},
+            json={"email": "outsider@test.com", "password": "StrongPass123!", "full_name": "Out"},
         )
     )
     outsider_token = (
         await client.post(
             "/auth/login",
-            json={"email": "outsider@test.com", "password": "StrongPass123"},
+            json={"email": "outsider@test.com", "password": "StrongPass123!"},
         )
     ).json()["access_token"]
     outsider_headers = {"Authorization": f"Bearer {outsider_token}"}
@@ -138,7 +138,7 @@ async def test_list_users_returns_all_members(client: AsyncClient, auth_headers:
 
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123", "full_name": "Member"},
+        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -162,7 +162,7 @@ async def test_list_users_requires_admin(client: AsyncClient, auth_headers: dict
 
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123", "full_name": "Member"},
+        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -172,7 +172,7 @@ async def test_list_users_requires_admin(client: AsyncClient, auth_headers: dict
     member_token = (
         await client.post(
             "/auth/login",
-            json={"email": "member@test.com", "password": "StrongPass123"},
+            json={"email": "member@test.com", "password": "StrongPass123!"},
         )
     ).json()["access_token"]
 
@@ -190,7 +190,7 @@ async def test_search_users_returns_matching(client: AsyncClient, auth_headers: 
 
     await client.post(
         "/auth/register",
-        json={"email": "alice@test.com", "password": "StrongPass123", "full_name": "Alice Smith"},
+        json={"email": "alice@test.com", "password": "StrongPass123!", "full_name": "Alice Smith"},
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -205,8 +205,8 @@ async def test_search_users_returns_matching(client: AsyncClient, auth_headers: 
     )
     assert resp.status_code == 200
     body = resp.json()
-    assert body["total"] == 1
-    assert body["users"][0]["full_name"] == "Alice Smith"
+    assert len(body) == 1
+    assert body[0]["full_name"] == "Alice Smith"
 
 
 async def test_search_users_no_match_returns_empty(client: AsyncClient, auth_headers: dict):
@@ -220,4 +220,4 @@ async def test_search_users_no_match_returns_empty(client: AsyncClient, auth_hea
         headers=auth_headers,
     )
     assert resp.status_code == 200
-    assert resp.json()["total"] == 0
+    assert len(resp.json()) == 0

@@ -75,3 +75,23 @@ def test_jwt_tampered_token_raises():
     tampered = token[:-4] + "xxxx"
     with pytest.raises(jwt.InvalidTokenError):
         decode_jwt(tampered, _SECRET)
+
+
+def test_jwt_missing_sub_raises_keyerror():
+    """A mathematically valid JWT that is missing the 'sub' claim entirely."""
+    token = jwt.encode({"exp": 9999999999}, _SECRET, algorithm="HS256")
+    with pytest.raises(KeyError):
+        payload = decode_jwt(token, _SECRET)
+        # Force the KeyError by trying to access "sub" as the dependency does
+        _ = payload["sub"]
+
+
+def test_jwt_invalid_uuid_raises_valueerror():
+    """A valid JWT where 'sub' is not a valid UUID string format."""
+    token = jwt.encode({"sub": "admin", "exp": 9999999999}, _SECRET, algorithm="HS256")
+    payload = decode_jwt(token, _SECRET)
+    
+    # dependencies.py calls UUID(payload["sub"])
+    from uuid import UUID
+    with pytest.raises(ValueError):
+        UUID(payload["sub"])

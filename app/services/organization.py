@@ -68,7 +68,5 @@ class OrgService:
     ) -> tuple[list, int]:
         return await self.membership_repo.get_users_in_org(org_id, limit, offset)
 
-    async def search_users(
-        self, org_id: UUID, query: str, limit: int, offset: int
-    ) -> tuple[list, int]:
-        return await self.user_repo.search_in_org(org_id, query, limit, offset)
+    async def search_users(self, org_id: UUID, query: str) -> list:
+        return await self.user_repo.search_in_org(org_id, query)

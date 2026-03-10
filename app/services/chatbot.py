@@ -25,13 +25,25 @@ class ChatbotService:
             f"Based on these logs, answer the following question:\n{question}"
         )
 
-    async def generate_answer(self, org_id: UUID, question: str) -> str:
+    async def generate_answer(
+        self, org_id: UUID, question: str, history: list[dict] | None = None
+    ) -> str:
         logs = await self.audit_repo.get_today_by_org(org_id)
+        if history:
+            # Multi-turn: the audit log context was included in the first turn's prompt,
+            # which is already in the history. Just continue the conversation.
+            return await self.llm.chat(history, question)
         prompt = self._build_prompt(question, logs)
         return await self.llm.generate(prompt)
 
-    async def stream_answer(self, org_id: UUID, question: str) -> AsyncIterator[str]:
+    async def stream_answer(
+        self, org_id: UUID, question: str, history: list[dict] | None = None
+    ) -> AsyncIterator[str]:
         logs = await self.audit_repo.get_today_by_org(org_id)
-        prompt = self._build_prompt(question, logs)
-        async for chunk in self.llm.stream(prompt):
-            yield chunk
+        if history:
+            async for chunk in self.llm.chat_stream(history, question):
+                yield chunk
+        else:
+            prompt = self._build_prompt(question, logs)
+            async for chunk in self.llm.stream(prompt):
+                yield chunk

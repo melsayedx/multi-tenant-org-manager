@@ -10,7 +10,7 @@ async def _create_org_and_member(client: AsyncClient, auth_headers: dict) -> tup
     ).json()["org_id"]
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123", "full_name": "Member"},
+        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -20,7 +20,7 @@ async def _create_org_and_member(client: AsyncClient, auth_headers: dict) -> tup
     member_token = (
         await client.post(
             "/auth/login",
-            json={"email": "member@test.com", "password": "StrongPass123"},
+            json={"email": "member@test.com", "password": "StrongPass123!"},
         )
     ).json()["access_token"]
     return org_id, member_token
@@ -55,12 +55,12 @@ async def test_get_audit_logs_requires_membership(client: AsyncClient, auth_head
     ).json()["org_id"]
     await client.post(
         "/auth/register",
-        json={"email": "stranger@test.com", "password": "StrongPass123", "full_name": "Stranger"},
+        json={"email": "stranger@test.com", "password": "StrongPass123!", "full_name": "Stranger"},
     )
     stranger_token = (
         await client.post(
             "/auth/login",
-            json={"email": "stranger@test.com", "password": "StrongPass123"},
+            json={"email": "stranger@test.com", "password": "StrongPass123!"},
         )
     ).json()["access_token"]
 

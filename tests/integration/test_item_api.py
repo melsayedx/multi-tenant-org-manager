@@ -22,12 +22,12 @@ async def test_create_item_requires_membership(client: AsyncClient, auth_headers
 
     await client.post(
         "/auth/register",
-        json={"email": "outsider@test.com", "password": "StrongPass123", "full_name": "Out"},
+        json={"email": "outsider@test.com", "password": "StrongPass123!", "full_name": "Out"},
     )
     outsider_token = (
         await client.post(
             "/auth/login",
-            json={"email": "outsider@test.com", "password": "StrongPass123"},
+            json={"email": "outsider@test.com", "password": "StrongPass123!"},
         )
     ).json()["access_token"]
 
@@ -46,7 +46,7 @@ async def test_list_items_admin_sees_all(client: AsyncClient, auth_headers: dict
 
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123", "full_name": "Member"},
+        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -56,7 +56,7 @@ async def test_list_items_admin_sees_all(client: AsyncClient, auth_headers: dict
     member_token = (
         await client.post(
             "/auth/login",
-            json={"email": "member@test.com", "password": "StrongPass123"},
+            json={"email": "member@test.com", "password": "StrongPass123!"},
         )
     ).json()["access_token"]
     member_headers = {"Authorization": f"Bearer {member_token}"}
@@ -84,7 +84,7 @@ async def test_list_items_member_sees_own_only(client: AsyncClient, auth_headers
 
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123", "full_name": "Member"},
+        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -94,7 +94,7 @@ async def test_list_items_member_sees_own_only(client: AsyncClient, auth_headers
     member_token = (
         await client.post(
             "/auth/login",
-            json={"email": "member@test.com", "password": "StrongPass123"},
+            json={"email": "member@test.com", "password": "StrongPass123!"},
         )
     ).json()["access_token"]
     member_headers = {"Authorization": f"Bearer {member_token}"}
@@ -147,12 +147,12 @@ async def test_list_items_requires_membership(client: AsyncClient, auth_headers:
 
     await client.post(
         "/auth/register",
-        json={"email": "stranger@test.com", "password": "StrongPass123", "full_name": "Stranger"},
+        json={"email": "stranger@test.com", "password": "StrongPass123!", "full_name": "Stranger"},
     )
     stranger_token = (
         await client.post(
             "/auth/login",
-            json={"email": "stranger@test.com", "password": "StrongPass123"},
+            json={"email": "stranger@test.com", "password": "StrongPass123!"},
         )
     ).json()["access_token"]
 

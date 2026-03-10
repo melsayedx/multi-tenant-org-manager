@@ -26,6 +26,7 @@ async def get_current_user(
         user_id = UUID(payload["sub"])
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError, KeyError, ValueError):
         raise NotAuthenticatedException()
+
     user = await UserRepository(db).get_by_id(user_id)
     if not user:
         raise NotAuthenticatedException()

@@ -7,7 +7,7 @@ async def test_register_returns_user(client: AsyncClient):
         "/auth/register",
         json={
             "email": "user@test.com",
-            "password": "StrongPass123",
+            "password": "StrongPass123!",
             "full_name": "John Doe",
         },
     )
@@ -25,13 +25,13 @@ async def test_login_returns_token(client: AsyncClient):
         "/auth/register",
         json={
             "email": "login@test.com",
-            "password": "StrongPass123",
+            "password": "StrongPass123!",
             "full_name": "Login User",
         },
     )
     resp = await client.post(
         "/auth/login",
-        json={"email": "login@test.com", "password": "StrongPass123"},
+        json={"email": "login@test.com", "password": "StrongPass123!"},
     )
     assert resp.status_code == 200
     body = resp.json()
@@ -42,7 +42,7 @@ async def test_login_returns_token(client: AsyncClient):
 async def test_register_duplicate_email_returns_409(client: AsyncClient):
     payload = {
         "email": "dup@test.com",
-        "password": "StrongPass123",
+        "password": "StrongPass123!",
         "full_name": "User",
     }
     await client.post("/auth/register", json=payload)
@@ -55,7 +55,7 @@ async def test_login_wrong_password_returns_401(client: AsyncClient):
         "/auth/register",
         json={
             "email": "pass@test.com",
-            "password": "StrongPass123",
+            "password": "StrongPass123!",
             "full_name": "User",
         },
     )
@@ -69,7 +69,7 @@ async def test_login_wrong_password_returns_401(client: AsyncClient):
 async def test_login_unknown_email_returns_401(client: AsyncClient):
     resp = await client.post(
         "/auth/login",
-        json={"email": "nobody@test.com", "password": "StrongPass123"},
+        json={"email": "nobody@test.com", "password": "StrongPass123!"},
     )
     assert resp.status_code == 401
 
@@ -77,7 +77,7 @@ async def test_login_unknown_email_returns_401(client: AsyncClient):
 async def test_login_invalid_email_format_returns_422(client: AsyncClient):
     resp = await client.post(
         "/auth/login",
-        json={"email": "not-an-email", "password": "StrongPass123"},
+        json={"email": "not-an-email", "password": "StrongPass123!"},
     )
     assert resp.status_code == 422
 

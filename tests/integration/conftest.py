@@ -44,13 +44,13 @@ async def auth_headers(client: AsyncClient) -> dict:
         "/auth/register",
         json={
             "email": "admin@test.com",
-            "password": "StrongPass123",
+            "password": "StrongPass123!",
             "full_name": "Admin User",
         },
     )
     resp = await client.post(
         "/auth/login",
-        json={"email": "admin@test.com", "password": "StrongPass123"},
+        json={"email": "admin@test.com", "password": "StrongPass123!"},
     )
     token = resp.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}

@@ -17,30 +17,22 @@ class MembershipRepository:
         return membership
 
     async def get(self, user_id: UUID, org_id: UUID) -> Membership | None:
-        result = await self.session.execute(
-            select(Membership).where(
-                Membership.user_id == user_id,
-                Membership.org_id == org_id,
-            )
-        )
-        return result.scalar_one_or_none()
+        return await self.session.get(Membership, (user_id, org_id))
 
     async def get_user_and_membership(
         self, email: str, org_id: UUID
     ) -> tuple[User | None, Membership | None]:
         """Single query: fetch the user by email + their membership in org_id (if any)."""
-        result = await self.session.execute(
+        row = (await self.session.execute(
             select(User, Membership)
             .outerjoin(
                 Membership,
                 (Membership.user_id == User.id) & (Membership.org_id == org_id),
             )
             .where(User.email == email)
-        )
-        row = result.one_or_none()
-        if row is None:
-            return None, None
-        return row.User, row.Membership
+        )).first()
+
+        return row.tuple() if row else (None, None)
 
     async def get_users_in_org(
         self, org_id: UUID, limit: int, offset: int

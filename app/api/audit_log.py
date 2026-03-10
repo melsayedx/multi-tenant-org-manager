@@ -1,3 +1,4 @@
+from typing import AsyncIterator
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -14,6 +15,12 @@ from app.services.audit_log import AuditLogService
 from app.services.chatbot import ChatbotService
 
 router = APIRouter(prefix="/organizations/{org_id}", tags=["audit-logs"])
+
+
+async def _sse(stream: AsyncIterator[str]) -> AsyncIterator[str]:
+    """Wrap an async text stream into proper Server-Sent Events format."""
+    async for chunk in stream:
+        yield f"data: {chunk}\n\n"
 
 
 @router.get("/audit-logs", response_model=list[AuditLogResponse])
@@ -34,10 +41,12 @@ async def ask_chatbot(
 ):
     llm = GeminiProvider()
     service = ChatbotService(AuditLogRepository(db), llm)
+    history = [h.model_dump() for h in data.history] or None
+
     if data.stream:
         return StreamingResponse(
-            service.stream_answer(org_id, data.question),
+            _sse(service.stream_answer(org_id, data.question, history)),
             media_type="text/event-stream",
         )
-    answer = await service.generate_answer(org_id, data.question)
+    answer = await service.generate_answer(org_id, data.question, history)
     return ChatbotResponse(answer=answer)

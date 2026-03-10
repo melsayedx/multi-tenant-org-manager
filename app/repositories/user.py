@@ -17,25 +17,17 @@ class UserRepository:
         return user
 
     async def get_by_email(self, email: str) -> User | None:
-        result = await self.session.execute(select(User).where(User.email == email))
-        return result.scalar_one_or_none()
+        return await self.session.scalar(select(User).where(User.email == email))
 
     async def get_by_id(self, user_id: UUID) -> User | None:
-        result = await self.session.execute(select(User).where(User.id == user_id))
-        return result.scalar_one_or_none()
+        return await self.session.get(User, user_id)
 
-    async def search_in_org(
-        self, org_id: UUID, query: str, limit: int, offset: int
-    ) -> tuple[list, int]:
+    async def search_in_org(self, org_id: UUID, query: str) -> list:
         base = (
             select(User, Membership.role)
             .join(Membership, Membership.user_id == User.id)
             .where(Membership.org_id == org_id)
             .where(User.search_vector.op("@@")(func.plainto_tsquery("english", query)))
         )
-        count_result = await self.session.execute(
-            select(func.count()).select_from(base.subquery())
-        )
-        total = count_result.scalar() or 0
-        result = await self.session.execute(base.offset(offset).limit(limit))
-        return list(result.all()), total
+        result = await self.session.execute(base)
+        return list(result.all())

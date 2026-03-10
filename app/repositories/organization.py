@@ -16,7 +16,4 @@ class OrganizationRepository:
         return org
 
     async def get_by_id(self, org_id: UUID) -> Organization | None:
-        result = await self.session.execute(
-            select(Organization).where(Organization.id == org_id)
-        )
-        return result.scalar_one_or_none()
+        return await self.session.get(Organization, org_id)

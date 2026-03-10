@@ -74,22 +74,15 @@ async def list_users(
     )
 
 
-@router.get("/organizations/{org_id}/users/search", response_model=PaginatedUsers)
+@router.get("/organizations/{org_id}/users/search", response_model=list[UserInOrg])
 async def search_users(
     org_id: UUID,
     q: str = Query(min_length=1),
-    limit: int = Query(default=20, le=100),
-    offset: int = Query(default=0, ge=0),
     _: Membership = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    users, total = await _org_service(db).search_users(org_id, q, limit, offset)
-    return PaginatedUsers(
-        users=[
-            UserInOrg(id=u.id, email=u.email, full_name=u.full_name, role=r.value)
-            for u, r in users
-        ],
-        total=total,
-        limit=limit,
-        offset=offset,
-    )
+    users = await _org_service(db).search_users(org_id, q)
+    return [
+        UserInOrg(id=u.id, email=u.email, full_name=u.full_name, role=r.value)
+        for u, r in users
+    ]
