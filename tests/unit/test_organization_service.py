@@ -56,8 +56,7 @@ async def test_invite_user_success(
     user = User(id=uuid7(), email="new@test.com", full_name="New User", password="hashed")
     membership = Membership(user_id=user.id, org_id=org_id, role=Role.MEMBER)
 
-    mock_user_repo.get_by_email.return_value = user
-    mock_membership_repo.get.return_value = None
+    mock_membership_repo.get_user_and_membership.return_value = (user, None)
     mock_membership_repo.create.return_value = membership
 
     result = await _service(
@@ -71,7 +70,7 @@ async def test_invite_user_success(
 async def test_invite_user_not_found_raises(
     mock_org_repo, mock_membership_repo, mock_user_repo, mock_audit_repo
 ):
-    mock_user_repo.get_by_email.return_value = None
+    mock_membership_repo.get_user_and_membership.return_value = (None, None)
 
     with pytest.raises(NotFoundException):
         await _service(
@@ -83,10 +82,8 @@ async def test_invite_already_member_raises(
     mock_org_repo, mock_membership_repo, mock_user_repo, mock_audit_repo
 ):
     user = User(id=uuid7(), email="existing@test.com", full_name="Existing", password="hashed")
-    mock_user_repo.get_by_email.return_value = user
-    mock_membership_repo.get.return_value = Membership(
-        user_id=user.id, org_id=uuid7(), role=Role.MEMBER
-    )
+    existing = Membership(user_id=user.id, org_id=uuid7(), role=Role.MEMBER)
+    mock_membership_repo.get_user_and_membership.return_value = (user, existing)
 
     with pytest.raises(ConflictException):
         await _service(

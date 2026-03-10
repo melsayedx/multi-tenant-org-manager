@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import auth, organization
+from app.api import auth, item, organization
 
 
 @asynccontextmanager
@@ -19,6 +19,7 @@ app = FastAPI(
 
 app.include_router(auth.router)
 app.include_router(organization.router)
+app.include_router(item.router)
 
 
 @app.get("/health", tags=["health"])
