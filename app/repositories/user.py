@@ -25,6 +25,7 @@ class UserRepository:
         # uses session identity map cache when the object is already loaded
         return await self.session.get(User, user_id)
 
+    # NOTE: the admin making the request is not excluded from search results
     async def search_in_org(self, org_id: UUID, query: str) -> list:
         # split on non-word characters and drop empty tokens
         words = [w for w in re.split(r"\W+", query.strip()) if w]
