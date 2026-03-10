@@ -3,14 +3,10 @@ from unittest.mock import AsyncMock, patch
 from httpx import AsyncClient
 
 
-async def _create_org_and_member(
-    client: AsyncClient, auth_headers: dict
-) -> tuple[str, str]:
+async def _create_org_and_member(client: AsyncClient, auth_headers: dict) -> tuple[str, str]:
     """Helper: creates an org, registers+invites a member, returns (org_id, member_token)."""
     org_id = (
-        await client.post(
-            "/organization", json={"org_name": "Org"}, headers=auth_headers
-        )
+        await client.post("/organizations", json={"org_name": "Org"}, headers=auth_headers)
     ).json()["org_id"]
     await client.post(
         "/auth/register",
@@ -21,7 +17,7 @@ async def _create_org_and_member(
         },
     )
     await client.post(
-        f"/organization/{org_id}/user",
+        f"/organizations/{org_id}/users",
         json={"email": "member@test.com", "role": "member"},
         headers=auth_headers,
     )
@@ -36,9 +32,7 @@ async def _create_org_and_member(
 
 async def test_get_audit_logs_returns_entries(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post(
-            "/organization", json={"org_name": "Org"}, headers=auth_headers
-        )
+        await client.post("/organizations", json={"org_name": "Org"}, headers=auth_headers)
     ).json()["org_id"]
 
     resp = await client.get(f"/organizations/{org_id}/audit-logs", headers=auth_headers)
@@ -59,13 +53,9 @@ async def test_get_audit_logs_requires_admin(client: AsyncClient, auth_headers: 
     assert resp.status_code == 403
 
 
-async def test_get_audit_logs_requires_membership(
-    client: AsyncClient, auth_headers: dict
-):
+async def test_get_audit_logs_requires_membership(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post(
-            "/organization", json={"org_name": "Org"}, headers=auth_headers
-        )
+        await client.post("/organizations", json={"org_name": "Org"}, headers=auth_headers)
     ).json()["org_id"]
     await client.post(
         "/auth/register",
@@ -91,9 +81,7 @@ async def test_get_audit_logs_requires_membership(
 
 async def test_ask_chatbot_returns_answer(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post(
-            "/organization", json={"org_name": "Org"}, headers=auth_headers
-        )
+        await client.post("/organizations", json={"org_name": "Org"}, headers=auth_headers)
     ).json()["org_id"]
 
     with patch(
@@ -121,13 +109,9 @@ async def test_ask_chatbot_requires_admin(client: AsyncClient, auth_headers: dic
     assert resp.status_code == 403
 
 
-async def test_ask_chatbot_empty_question_returns_422(
-    client: AsyncClient, auth_headers: dict
-):
+async def test_ask_chatbot_empty_question_returns_422(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post(
-            "/organization", json={"org_name": "Org"}, headers=auth_headers
-        )
+        await client.post("/organizations", json={"org_name": "Org"}, headers=auth_headers)
     ).json()["org_id"]
 
     resp = await client.post(

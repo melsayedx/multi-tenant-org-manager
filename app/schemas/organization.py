@@ -18,6 +18,10 @@ class InviteUser(BaseModel):
     role: Role
 
 
+class InviteResponse(BaseModel):
+    message: str
+
+
 class UserInOrg(BaseModel):
     id: UUID
     email: str

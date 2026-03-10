@@ -18,14 +18,19 @@ class ItemRepository:
     async def get_by_org(
         self, org_id: UUID, limit: int, offset: int, created_by: UUID | None = None
     ) -> tuple[list[Item], int]:
-        base = select(Item).where(Item.org_id == org_id)
+        base = select(Item, func.count().over().label("total")).where(Item.org_id == org_id)
         if created_by:
             base = base.where(Item.created_by == created_by)
-        count_result = await self.session.execute(
-            select(func.count()).select_from(base.subquery())
-        )
-        total = count_result.scalar() or 0
-        result = await self.session.execute(
-            base.order_by(Item.created_at.desc()).offset(offset).limit(limit)
-        )
-        return list(result.scalars().all()), total
+        rows = (
+            await self.session.execute(
+                base.order_by(Item.created_at.desc()).offset(offset).limit(limit)
+            )
+        ).all()
+        if not rows:
+            # offset beyond total — fall back to count-only query
+            count_q = select(func.count()).select_from(Item).where(Item.org_id == org_id)
+            if created_by:
+                count_q = count_q.where(Item.created_by == created_by)
+            return [], (await self.session.execute(count_q)).scalar() or 0
+        total = rows[0].total
+        return [row[0] for row in rows], total

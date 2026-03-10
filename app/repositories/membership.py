@@ -36,19 +36,21 @@ class MembershipRepository:
 
         return row._tuple() if row else (None, None)
 
-    async def get_users_in_org(
-        self, org_id: UUID, limit: int, offset: int
-    ) -> tuple[list, int]:
+    async def get_users_in_org(self, org_id: UUID, limit: int, offset: int) -> tuple[list, int]:
         base = (
-            select(User, Membership.role)
+            select(User, Membership.role, func.count().over().label("total"))
             .join(Membership, Membership.user_id == User.id)
             .where(Membership.org_id == org_id)
+            .order_by(asc(Membership.created_at))
+            .offset(offset)
+            .limit(limit)
         )
-        count_result = await self.session.execute(
-            select(func.count()).select_from(base.subquery())
-        )
-        total = count_result.scalar() or 0
-        result = await self.session.execute(
-            base.order_by(asc(Membership.created_at)).offset(offset).limit(limit)
-        )
-        return list(result.all()), total
+        rows = (await self.session.execute(base)).all()
+        if not rows:
+            # offset beyond total — fall back to count-only query
+            count_result = await self.session.execute(
+                select(func.count()).select_from(Membership).where(Membership.org_id == org_id)
+            )
+            return [], count_result.scalar() or 0
+        total = rows[0].total
+        return [(row[0], row[1]) for row in rows], total

@@ -17,8 +17,8 @@ cp .env.example .env          # edit JWT_SECRET_KEY and GEMINI_API_KEY
 docker compose up --build
 ```
 
-The API will be available at `http://localhost:8000`.
-Interactive docs (OpenAPI UI): `http://localhost:8000/docs`
+- The API will be available at `http://localhost:8000`.
+- Interactive docs (OpenAPI UI): `http://localhost:8000/docs`
 
 ### Run Tests
 
@@ -39,7 +39,9 @@ api/ → services/ → repositories/ → models/
 
 Dependencies flow inward only. `core/` and `schemas/` are cross-cutting with no outward dependencies.
 
-In strict Clean Architecture you would define repository interfaces (Protocols) in the domain layer and place concrete SQLAlchemy implementations in `infrastructure/`, using dependency injection to keep third-party dependencies out of inner layers entirely. You would also introduce domain entities, value objects, and contracts to fully isolate business logic from infrastructure concerns. This project deliberately skips all of that. There are no domain entities separate from SQLAlchemy models, no value objects, and no contracts — repositories depend on ORM models directly without ports or adapters sitting between them. The trade-off is pragmatic: fewer files, less indirection, and sufficient decoupling for the scope of ~6 features. The layer rule still holds; the only relaxation is that the repository abstraction is not formalized behind a Protocol.
+#### Clarification
+
+In strict Onion Architecture you would define repository interfaces (Protocols) in the domain layer and place concrete SQLAlchemy implementations in `infrastructure/`, using dependency injection to keep third-party dependencies out of inner layers entirely. You would also introduce domain entities, value objects, and contracts to fully isolate business logic from infrastructure concerns. This project deliberately skips all of that. There are no domain entities separate from SQLAlchemy models, no value objects, and no contracts — repositories depend on ORM models directly without ports or adapters sitting between them. The trade-off is pragmatic: fewer files, less indirection, and sufficient decoupling for the scope of ~6 features. The layer rule still holds; the only relaxation is that the repository abstraction is not formalized behind a Protocol.
 
 For an example of one of my projects that does implement the full separation — domain entities, value objects, contracts, and dependency injection — see [github.com/melsayedx/zero_](https://github.com/melsayedx/zero_).
 
@@ -86,12 +88,12 @@ app/
 |---|---|---|---|---|
 | POST | `/auth/register` | — | — | Register a new user |
 | POST | `/auth/login` | — | — | Login, receive JWT |
-| POST | `/organization` | JWT | any | Create org (creator becomes admin) |
-| POST | `/organization/{id}/user` | JWT | admin | Invite user to org |
+| POST | `/organizations` | JWT | any | Create org (creator becomes admin) |
+| POST | `/organizations/{id}/users` | JWT | admin | Invite user to org |
 | GET | `/organizations/{id}/users` | JWT | admin | List org members (paginated) |
 | GET | `/organizations/{id}/users/search` | JWT | admin | Full-text search members |
-| POST | `/organizations/{id}/item` | JWT | member+ | Create item |
-| GET | `/organizations/{id}/item` | JWT | member+ | List items (admin: all; member: own) |
+| POST | `/organizations/{id}/items` | JWT | member+ | Create item |
+| GET | `/organizations/{id}/items` | JWT | member+ | List items (admin: all; member: own) |
 | GET | `/organizations/{id}/audit-logs` | JWT | admin | List org audit log entries |
 | POST | `/organizations/{id}/audit-logs/ask` | JWT | admin | Ask the AI chatbot about today's logs |
 | GET | `/health` | — | — | Health check |
@@ -192,7 +194,7 @@ Display conversion to local time is the client's responsibility.
 |---|---|---|---|
 | `DATABASE_URL` | Yes | — | Async PostgreSQL URL (`postgresql+asyncpg://...`) |
 | `JWT_SECRET_KEY` | Yes | — | HS256 signing key (min 32 chars in production) |
-| `JWT_EXPIRATION_MINUTES` | No | `30` | Token TTL in minutes |
+| `JWT_EXPIRATION_MINUTES` | No | `5` | Token TTL in minutes |
 | `GEMINI_API_KEY` | Yes* | `""` | Google Gemini API key (*required for chatbot) |
 | `POSTGRES_USER` | No | `orgmanager` | Used by docker-compose for DB init |
 | `POSTGRES_PASSWORD` | No | `orgmanager` | Used by docker-compose for DB init |
@@ -220,4 +222,4 @@ tests/
     └── test_rbac.py    # Cross-cutting RBAC + org isolation
 ```
 
-**74 tests, 89% coverage.**
+**83 tests, 88% coverage.**

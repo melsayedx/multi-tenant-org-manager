@@ -13,6 +13,7 @@ from app.repositories.membership import MembershipRepository
 from app.repositories.organization import OrganizationRepository
 from app.repositories.user import UserRepository
 from app.schemas.organization import (
+    InviteResponse,
     InviteUser,
     OrgCreate,
     OrgResponse,
@@ -33,7 +34,7 @@ def _org_service(db: AsyncSession) -> OrgService:
     )
 
 
-@router.post("/organization", response_model=OrgResponse, status_code=201)
+@router.post("/organizations", response_model=OrgResponse, status_code=201)
 async def create_organization(
     data: OrgCreate,
     user: User = Depends(get_current_user),
@@ -43,7 +44,7 @@ async def create_organization(
     return OrgResponse(org_id=org.id)
 
 
-@router.post("/organization/{org_id}/user", status_code=201)
+@router.post("/organizations/{org_id}/users", response_model=InviteResponse, status_code=201)
 async def invite_user(
     org_id: UUID,
     data: InviteUser,
@@ -52,7 +53,7 @@ async def invite_user(
     db: AsyncSession = Depends(get_db),
 ):
     await _org_service(db).invite_user(org_id, data.email, data.role, user.id)
-    return {"message": "User invited successfully"}
+    return InviteResponse(message="User invited successfully")
 
 
 @router.get("/organizations/{org_id}/users", response_model=PaginatedUsers)
@@ -66,8 +67,7 @@ async def list_users(
     users, total = await _org_service(db).list_users(org_id, limit, offset)
     return PaginatedUsers(
         users=[
-            UserInOrg(id=u.id, email=u.email, full_name=u.full_name, role=r.value)
-            for u, r in users
+            UserInOrg(id=u.id, email=u.email, full_name=u.full_name, role=r.value) for u, r in users
         ],
         total=total,
         limit=limit,
@@ -84,6 +84,5 @@ async def search_users(
 ):
     users = await _org_service(db).search_users(org_id, q)
     return [
-        UserInOrg(id=u.id, email=u.email, full_name=u.full_name, role=r.value)
-        for u, r in users
+        UserInOrg(id=u.id, email=u.email, full_name=u.full_name, role=r.value) for u, r in users
     ]

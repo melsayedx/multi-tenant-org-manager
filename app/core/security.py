@@ -7,6 +7,8 @@ from argon2.exceptions import VerificationError, VerifyMismatchError
 
 from app.core.utils import utcnow
 
+# module-level singleton — PasswordHasher is thread-safe and cheap to reuse;
+# creating it once avoids re-parsing Argon2 tuning parameters on every call
 _ph = PasswordHasher()
 
 
@@ -16,8 +18,13 @@ def hash_password(password: str) -> str:
 
 def verify_password(password: str, hashed: str) -> bool:
     try:
+        # argon2 API signature is verify(hash, plain) — not (plain, hash)
         return _ph.verify(hashed, password)
-    except (VerifyMismatchError, VerificationError):
+    except VerifyMismatchError:
+        # password does not match the stored hash
+        return False
+    except VerificationError:
+        # hash is malformed or uses parameters the library can't handle
         return False
 
 

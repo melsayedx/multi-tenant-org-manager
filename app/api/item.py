@@ -20,7 +20,7 @@ def _item_service(db: AsyncSession) -> ItemService:
     return ItemService(ItemRepository(db), AuditLogRepository(db))
 
 
-@router.post("/item", response_model=ItemResponse, status_code=201)
+@router.post("/items", response_model=ItemResponse, status_code=201)
 async def create_item(
     org_id: UUID,
     data: ItemCreate,
@@ -32,7 +32,7 @@ async def create_item(
     return ItemResponse(item_id=item.id)
 
 
-@router.get("/item", response_model=PaginatedItems)
+@router.get("/items", response_model=PaginatedItems)
 async def list_items(
     org_id: UUID,
     limit: int = Query(default=20, le=100),

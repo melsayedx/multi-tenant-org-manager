@@ -1,3 +1,4 @@
+import re
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -13,6 +14,7 @@ class UserRepository:
 
     async def create(self, user: User) -> User:
         self.session.add(user)
+        # flush to assign the DB-generated id without committing the transaction
         await self.session.flush()
         return user
 
@@ -20,14 +22,23 @@ class UserRepository:
         return await self.session.scalar(select(User).where(User.email == email))
 
     async def get_by_id(self, user_id: UUID) -> User | None:
+        # uses session identity map cache when the object is already loaded
         return await self.session.get(User, user_id)
 
     async def search_in_org(self, org_id: UUID, query: str) -> list:
+        # split on non-word characters and drop empty tokens
+        words = [w for w in re.split(r"\W+", query.strip()) if w]
+        if not words:
+            return []
+
+        # build a prefix-match tsquery: e.g. "jo & do:*" matches "john doe"
+        tsquery_str = " & ".join(f"{word}:*" for word in words)
         base = (
             select(User, Membership.role)
             .join(Membership, Membership.user_id == User.id)
             .where(Membership.org_id == org_id)
-            .where(User.search_vector.op("@@")(func.plainto_tsquery("english", query)))
+            # @@ operator checks whether the tsvector matches the tsquery
+            .where(User.search_vector.op("@@")(func.to_tsquery("english", tsquery_str)))
         )
         result = await self.session.execute(base)
         return list(result.all())

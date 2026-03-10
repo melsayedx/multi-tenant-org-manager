@@ -3,13 +3,11 @@ from httpx import AsyncClient
 
 async def test_create_item_returns_item_id(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post(
-            "/organization", json={"org_name": "Org"}, headers=auth_headers
-        )
+        await client.post("/organizations", json={"org_name": "Org"}, headers=auth_headers)
     ).json()["org_id"]
 
     resp = await client.post(
-        f"/organizations/{org_id}/item",
+        f"/organizations/{org_id}/items",
         json={"item_details": {"name": "Widget", "price": 9.99}},
         headers=auth_headers,
     )
@@ -19,9 +17,7 @@ async def test_create_item_returns_item_id(client: AsyncClient, auth_headers: di
 
 async def test_create_item_requires_membership(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post(
-            "/organization", json={"org_name": "Org"}, headers=auth_headers
-        )
+        await client.post("/organizations", json={"org_name": "Org"}, headers=auth_headers)
     ).json()["org_id"]
 
     await client.post(
@@ -40,7 +36,7 @@ async def test_create_item_requires_membership(client: AsyncClient, auth_headers
     ).json()["access_token"]
 
     resp = await client.post(
-        f"/organizations/{org_id}/item",
+        f"/organizations/{org_id}/items",
         json={"item_details": {"name": "Widget"}},
         headers={"Authorization": f"Bearer {outsider_token}"},
     )
@@ -49,9 +45,7 @@ async def test_create_item_requires_membership(client: AsyncClient, auth_headers
 
 async def test_list_items_admin_sees_all(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post(
-            "/organization", json={"org_name": "Org"}, headers=auth_headers
-        )
+        await client.post("/organizations", json={"org_name": "Org"}, headers=auth_headers)
     ).json()["org_id"]
 
     await client.post(
@@ -63,7 +57,7 @@ async def test_list_items_admin_sees_all(client: AsyncClient, auth_headers: dict
         },
     )
     await client.post(
-        f"/organization/{org_id}/user",
+        f"/organizations/{org_id}/users",
         json={"email": "member@test.com", "role": "member"},
         headers=auth_headers,
     )
@@ -76,26 +70,24 @@ async def test_list_items_admin_sees_all(client: AsyncClient, auth_headers: dict
     member_headers = {"Authorization": f"Bearer {member_token}"}
 
     await client.post(
-        f"/organizations/{org_id}/item",
+        f"/organizations/{org_id}/items",
         json={"item_details": {"name": "Member Item"}},
         headers=member_headers,
     )
     await client.post(
-        f"/organizations/{org_id}/item",
+        f"/organizations/{org_id}/items",
         json={"item_details": {"name": "Admin Item"}},
         headers=auth_headers,
     )
 
-    resp = await client.get(f"/organizations/{org_id}/item", headers=auth_headers)
+    resp = await client.get(f"/organizations/{org_id}/items", headers=auth_headers)
     assert resp.status_code == 200
     assert resp.json()["total"] == 2
 
 
 async def test_list_items_member_sees_own_only(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post(
-            "/organization", json={"org_name": "Org"}, headers=auth_headers
-        )
+        await client.post("/organizations", json={"org_name": "Org"}, headers=auth_headers)
     ).json()["org_id"]
 
     await client.post(
@@ -107,7 +99,7 @@ async def test_list_items_member_sees_own_only(client: AsyncClient, auth_headers
         },
     )
     await client.post(
-        f"/organization/{org_id}/user",
+        f"/organizations/{org_id}/users",
         json={"email": "member@test.com", "role": "member"},
         headers=auth_headers,
     )
@@ -120,17 +112,17 @@ async def test_list_items_member_sees_own_only(client: AsyncClient, auth_headers
     member_headers = {"Authorization": f"Bearer {member_token}"}
 
     await client.post(
-        f"/organizations/{org_id}/item",
+        f"/organizations/{org_id}/items",
         json={"item_details": {"name": "Member Item"}},
         headers=member_headers,
     )
     await client.post(
-        f"/organizations/{org_id}/item",
+        f"/organizations/{org_id}/items",
         json={"item_details": {"name": "Admin Item"}},
         headers=auth_headers,
     )
 
-    resp = await client.get(f"/organizations/{org_id}/item", headers=member_headers)
+    resp = await client.get(f"/organizations/{org_id}/items", headers=member_headers)
     assert resp.status_code == 200
     body = resp.json()
     assert body["total"] == 1
@@ -139,20 +131,18 @@ async def test_list_items_member_sees_own_only(client: AsyncClient, auth_headers
 
 async def test_list_items_pagination(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post(
-            "/organization", json={"org_name": "Org"}, headers=auth_headers
-        )
+        await client.post("/organizations", json={"org_name": "Org"}, headers=auth_headers)
     ).json()["org_id"]
 
     for i in range(5):
         await client.post(
-            f"/organizations/{org_id}/item",
+            f"/organizations/{org_id}/items",
             json={"item_details": {"index": i}},
             headers=auth_headers,
         )
 
     resp = await client.get(
-        f"/organizations/{org_id}/item",
+        f"/organizations/{org_id}/items",
         params={"limit": 2, "offset": 0},
         headers=auth_headers,
     )
@@ -164,9 +154,7 @@ async def test_list_items_pagination(client: AsyncClient, auth_headers: dict):
 
 async def test_list_items_requires_membership(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post(
-            "/organization", json={"org_name": "Org"}, headers=auth_headers
-        )
+        await client.post("/organizations", json={"org_name": "Org"}, headers=auth_headers)
     ).json()["org_id"]
 
     await client.post(
@@ -185,7 +173,7 @@ async def test_list_items_requires_membership(client: AsyncClient, auth_headers:
     ).json()["access_token"]
 
     resp = await client.get(
-        f"/organizations/{org_id}/item",
+        f"/organizations/{org_id}/items",
         headers={"Authorization": f"Bearer {stranger_token}"},
     )
     assert resp.status_code == 403
