@@ -6,7 +6,7 @@ class LLMProvider(Protocol):
         """Single-turn: generate a complete response."""
         ...
 
-    async def stream(self, prompt: str) -> AsyncIterator[str]:
+    def stream(self, prompt: str) -> AsyncIterator[str]:
         """Single-turn: stream response chunks."""
         ...
 
@@ -14,7 +14,7 @@ class LLMProvider(Protocol):
         """Multi-turn: continue a conversation given prior history."""
         ...
 
-    async def chat_stream(
+    def chat_stream(
         self, history: list[dict], message: str
     ) -> AsyncIterator[str]:
         """Multi-turn: stream response chunks continuing a conversation."""

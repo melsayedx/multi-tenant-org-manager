@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_user, require_admin
-from app.infrastructure.database import get_db
+from app.infrastructure.database import get_db, get_read_db
 from app.models.membership import Membership
 from app.models.user import User
 from app.repositories.audit_log import AuditLogRepository
@@ -61,7 +61,7 @@ async def list_users(
     limit: int = Query(default=20, le=100),
     offset: int = Query(default=0, ge=0),
     _: Membership = Depends(require_admin),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_read_db),
 ):
     users, total = await _org_service(db).list_users(org_id, limit, offset)
     return PaginatedUsers(
@@ -80,7 +80,7 @@ async def search_users(
     org_id: UUID,
     q: str = Query(min_length=1),
     _: Membership = Depends(require_admin),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_read_db),
 ):
     users = await _org_service(db).search_users(org_id, q)
     return [

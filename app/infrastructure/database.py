@@ -9,9 +9,9 @@ engine = create_async_engine(
 )
 
 async_session = async_sessionmaker(engine, expire_on_commit=False)
+async_read_session = async_sessionmaker(engine, expire_on_commit=False, autoflush=False)
 
 
-# TODO: handle the sync case for read operations that don't require transactions, e.g. by using a separate sync engine and sessionmaker
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
         try:
@@ -20,3 +20,9 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         except Exception:
             await session.rollback()
             raise
+
+
+async def get_read_db() -> AsyncGenerator[AsyncSession, None]:
+    """Read-only session — no transaction, no commit/rollback overhead."""
+    async with async_read_session() as session:
+        yield session

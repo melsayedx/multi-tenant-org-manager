@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.core.exceptions import ForbiddenException, NotAuthenticatedException
 from app.core.security import decode_jwt
-from app.infrastructure.database import get_db
+from app.infrastructure.database import get_read_db
 from app.models.membership import Membership, Role
 from app.models.user import User
 from app.repositories.membership import MembershipRepository
@@ -20,7 +20,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_read_db),
 ) -> User:
     try:
         payload = decode_jwt(token, settings.jwt_secret_key)
@@ -37,7 +37,7 @@ async def get_current_user(
 async def require_membership(
     org_id: UUID,
     user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_read_db),
 ) -> Membership:
     membership = await MembershipRepository(db).get(user.id, org_id)
     if not membership:
@@ -48,7 +48,7 @@ async def require_membership(
 async def require_admin(
     org_id: UUID,
     user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_read_db),
 ) -> Membership:
     membership = await MembershipRepository(db).get(user.id, org_id)
     if not membership or membership.role != Role.ADMIN:

@@ -56,7 +56,7 @@ async def test_member_cannot_invite_users(client: AsyncClient, auth_headers: dic
     await _invite(client, org_id, "member@test.com", "member", auth_headers)
     member_headers = {"Authorization": f"Bearer {member_token}"}
 
-    third_token = await _register_and_login(client, "third@test.com", "Third")
+    await _register_and_login(client, "third@test.com", "Third")
     resp = await client.post(
         f"/organization/{org_id}/user",
         json={"email": "third@test.com", "role": "member"},
@@ -187,7 +187,7 @@ async def test_user_cannot_access_other_orgs_items(
     client: AsyncClient, auth_headers: dict
 ):
     """Admin of Org A should get 403 on Org B's item endpoint."""
-    org_a_id = await _create_org(client, auth_headers, "Org A")
+    await _create_org(client, auth_headers, "Org A")
 
     user_b_token = await _register_and_login(client, "userb@test.com", "User B")
     user_b_headers = {"Authorization": f"Bearer {user_b_token}"}
@@ -201,7 +201,7 @@ async def test_user_cannot_access_other_orgs_items(
 async def test_user_cannot_access_other_orgs_audit_logs(
     client: AsyncClient, auth_headers: dict
 ):
-    org_a_id = await _create_org(client, auth_headers, "Org A")
+    await _create_org(client, auth_headers, "Org A")
 
     user_b_token = await _register_and_login(client, "userb@test.com", "User B")
     user_b_headers = {"Authorization": f"Bearer {user_b_token}"}
@@ -235,7 +235,7 @@ async def test_audit_logs_are_isolated_between_orgs(
     client: AsyncClient, auth_headers: dict
 ):
     """Org B admin should only see Org B's audit logs, not Org A's."""
-    org_a_id = await _create_org(client, auth_headers, "Org A")
+    await _create_org(client, auth_headers, "Org A")
 
     user_b_token = await _register_and_login(client, "userb@test.com", "User B")
     user_b_headers = {"Authorization": f"Bearer {user_b_token}"}

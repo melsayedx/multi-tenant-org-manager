@@ -1,9 +1,11 @@
-from typing import AsyncIterator
+from typing import TYPE_CHECKING, AsyncGenerator
 from uuid import UUID
 
 from app.infrastructure.llm.protocol import LLMProvider
-from app.models.audit_log import AuditLog
 from app.repositories.audit_log import AuditLogRepository
+
+if TYPE_CHECKING:
+    from app.models.audit_log import AuditLog
 
 
 class ChatbotService:
@@ -11,7 +13,8 @@ class ChatbotService:
         self.audit_repo = audit_repo
         self.llm = llm
 
-    def _build_prompt(self, question: str, logs: list[AuditLog]) -> str:
+    @staticmethod
+    def _build_prompt(question: str, logs: list["AuditLog"]) -> str:
         log_text = "\n".join(
             f"- [{log.created_at.isoformat()}] {log.action}: {log.entity_type} "
             f"(id={log.entity_id}) by user {log.user_id}"
@@ -25,25 +28,13 @@ class ChatbotService:
             f"Based on these logs, answer the following question:\n{question}"
         )
 
-    async def generate_answer(
-        self, org_id: UUID, question: str, history: list[dict] | None = None
-    ) -> str:
+    async def generate_answer(self, org_id: UUID, question: str) -> str:
         logs = await self.audit_repo.get_today_by_org(org_id)
-        if history:
-            # Multi-turn: the audit log context was included in the first turn's prompt,
-            # which is already in the history. Just continue the conversation.
-            return await self.llm.chat(history, question)
         prompt = self._build_prompt(question, logs)
         return await self.llm.generate(prompt)
 
-    async def stream_answer(
-        self, org_id: UUID, question: str, history: list[dict] | None = None
-    ) -> AsyncIterator[str]:
+    async def stream_answer(self, org_id: UUID, question: str) -> AsyncGenerator[str, None]:
         logs = await self.audit_repo.get_today_by_org(org_id)
-        if history:
-            async for chunk in self.llm.chat_stream(history, question):
-                yield chunk
-        else:
-            prompt = self._build_prompt(question, logs)
-            async for chunk in self.llm.stream(prompt):
-                yield chunk
+        prompt = self._build_prompt(question, logs)
+        async for chunk in self.llm.stream(prompt):
+            yield chunk

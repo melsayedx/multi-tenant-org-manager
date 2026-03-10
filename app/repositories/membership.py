@@ -34,7 +34,7 @@ class MembershipRepository:
             )
         ).first()
 
-        return row.tuple() if row else (None, None)
+        return row._tuple() if row else (None, None)
 
     async def get_users_in_org(
         self, org_id: UUID, limit: int, offset: int

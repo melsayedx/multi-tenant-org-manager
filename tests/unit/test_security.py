@@ -1,12 +1,10 @@
+from uuid import UUID
+
 import jwt
 import pytest
 from uuid_utils import uuid7
 
 from app.core.security import create_jwt, decode_jwt, hash_password, verify_password
-
-# ---------------------------------------------------------------------------
-# Password hashing — Argon2id
-# ---------------------------------------------------------------------------
 
 
 def test_hash_returns_non_plaintext():
@@ -37,11 +35,6 @@ def test_two_hashes_of_same_password_are_different():
     # Both must still verify correctly
     assert verify_password("MyPassword123", h1) is True
     assert verify_password("MyPassword123", h2) is True
-
-
-# ---------------------------------------------------------------------------
-# JWT — encode / decode
-# ---------------------------------------------------------------------------
 
 
 _SECRET = "test-secret-key-that-is-at-least-32-bytes!!"
@@ -81,7 +74,6 @@ def test_jwt_missing_sub_raises_keyerror():
     token = jwt.encode({"exp": 9999999999}, _SECRET, algorithm="HS256")
     with pytest.raises(KeyError):
         payload = decode_jwt(token, _SECRET)
-        # Force the KeyError by trying to access "sub" as the dependency does
         _ = payload["sub"]
 
 
@@ -89,9 +81,5 @@ def test_jwt_invalid_uuid_raises_valueerror():
     """A valid JWT where 'sub' is not a valid UUID string format."""
     token = jwt.encode({"sub": "admin", "exp": 9999999999}, _SECRET, algorithm="HS256")
     payload = decode_jwt(token, _SECRET)
-
-    # dependencies.py calls UUID(payload["sub"])
-    from uuid import UUID
-
     with pytest.raises(ValueError):
         UUID(payload["sub"])

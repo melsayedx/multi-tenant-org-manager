@@ -7,7 +7,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import require_admin
-from app.infrastructure.database import get_db
+from app.infrastructure.database import get_db, get_read_db
 from app.infrastructure.llm.gemini_provider import GeminiProvider
 from app.models.membership import Membership
 from app.repositories.audit_log import AuditLogRepository
@@ -28,7 +28,7 @@ async def _sse(stream: AsyncIterator[str]) -> AsyncIterator[str]:
 async def get_audit_logs(
     org_id: UUID,
     _: Membership = Depends(require_admin),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_read_db),
 ):
     return await AuditLogService(AuditLogRepository(db)).get_org_logs(org_id)
 
@@ -42,12 +42,11 @@ async def ask_chatbot(
 ):
     llm = GeminiProvider()
     service = ChatbotService(AuditLogRepository(db), llm)
-    history = [h.model_dump() for h in data.history] or None
 
     if data.stream:
         return StreamingResponse(
-            _sse(service.stream_answer(org_id, data.question, history)),
+            _sse(service.stream_answer(org_id, data.question)),
             media_type="text/event-stream",
         )
-    answer = await service.generate_answer(org_id, data.question, history)
+    answer = await service.generate_answer(org_id, data.question)
     return ChatbotResponse(answer=answer)

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_user, require_membership
-from app.infrastructure.database import get_db
+from app.infrastructure.database import get_db, get_read_db
 from app.models.membership import Membership
 from app.models.user import User
 from app.repositories.audit_log import AuditLogRepository
@@ -39,7 +39,7 @@ async def list_items(
     offset: int = Query(default=0, ge=0),
     membership: Membership = Depends(require_membership),
     user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_read_db),
 ):
     items, total = await _item_service(db).list_items(
         org_id, user.id, membership.role, limit, offset

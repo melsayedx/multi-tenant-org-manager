@@ -105,7 +105,7 @@ async def test_invite_already_member_raises(
 async def test_invite_user_to_multiple_orgs_success(
     mock_org_repo, mock_membership_repo, mock_user_repo, mock_audit_repo
 ):
-    """Test that a user can be successfully inserted/invited into multiple different organizations."""
+    """Test that a user can be successfully inserted/invited into multiple different orgs."""
     user = User(
         id=uuid7(), email="multi@test.com", full_name="Multi", password="hashed"
     )
