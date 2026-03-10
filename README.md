@@ -99,6 +99,83 @@ app/
 
 ---
 
+## Database Design
+
+### Entity-Relationship Diagram
+
+```mermaid
+erDiagram
+    users {
+        UUIDv7      id            PK
+        VARCHAR_64  email         UK
+        VARCHAR_64  full_name
+        VARCHAR_128 password
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+        TSVECTOR    search_vector
+    }
+    organizations {
+        UUIDv7     id         PK
+        VARCHAR_64 name
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+    memberships {
+        UUIDv7      user_id    PK_FK
+        UUIDv7      org_id     PK_FK
+        ENUM        role
+        TIMESTAMPTZ created_at
+    }
+    items {
+        UUIDv7      id           PK
+        UUIDv7      org_id       FK
+        UUIDv7      created_by   FK
+        JSONB       item_details
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+    audit_logs {
+        UUIDv7      id          PK
+        UUIDv7      org_id      FK
+        UUIDv7      user_id     FK
+        VARCHAR_256 action
+        VARCHAR_128 entity_type
+        UUIDv7      entity_id
+        JSONB       details
+        TIMESTAMPTZ created_at
+    }
+
+    users         ||--o{ memberships : "member of"
+    organizations ||--o{ memberships : "has"
+    users         ||--o{ items       : "creates"
+    organizations ||--o{ items       : "owns"
+    organizations ||--o{ audit_logs  : "has"
+    users         ||--o{ audit_logs  : "generates"
+```
+
+### Tables
+
+| Table | Primary Key | Notes |
+|---|---|---|
+| `users` | `id` (UUIDv7) | `email` unique; `search_vector` computed `TSVECTOR` over `full_name \|\| email` |
+| `organizations` | `id` (UUIDv7) | — |
+| `memberships` | `(user_id, org_id)` composite | `role` PostgreSQL enum (`admin`, `member`) |
+| `items` | `id` (UUIDv7) | `item_details` stored as JSONB |
+| `audit_logs` | `id` (UUIDv7) | `details` nullable JSONB; no FK on `entity_id` (polymorphic reference) |
+
+### Indexes
+
+| Index | Table | Columns | Type | Purpose |
+|---|---|---|---|---|
+| `ix_user_search_vector` | `users` | `search_vector` | GIN | Full-text member search |
+| `ix_users_email` | `users` | `email` | B-tree | Login lookup |
+| `ix_membership_org_created` | `memberships` | `(org_id, created_at)` | B-tree | Paginated member listing |
+| `ix_items_org_id` | `items` | `org_id` | B-tree | Items by organization |
+| `ix_items_created_by` | `items` | `created_by` | B-tree | Items by creator |
+| `ix_audit_logs_org_id_created_at` | `audit_logs` | `(org_id, created_at)` | B-tree | Audit log listing and chatbot today-filter |
+
+---
+
 ## API Endpoints
 
 | Method | Path | Auth | Role | Description |
