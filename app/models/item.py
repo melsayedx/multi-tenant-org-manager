@@ -7,9 +7,7 @@ from uuid import UUID
 from sqlalchemy import ForeignKey, func, DateTime
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from uuid_utils import uuid7
-
-from app.models.base import Base, utcnow
+from app.models.base import Base, uuid7, utcnow
 
 if TYPE_CHECKING:
     from app.models.organization import Organization

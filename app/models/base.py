@@ -1,11 +1,9 @@
-from datetime import datetime, timezone
-
+from app.core.utils import utcnow, uuid7
 from sqlalchemy.orm import DeclarativeBase
-
-
-def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
 
 
 class Base(DeclarativeBase):
     pass
+
+
+__all__ = ["Base", "utcnow", "uuid7"]

@@ -4,12 +4,10 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
-from sqlalchemy import CHAR, Computed, Index, String, func, DateTime
+from sqlalchemy import Computed, DateTime, Index, String, func
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from uuid_utils import uuid7
-
-from app.models.base import Base, utcnow
+from app.models.base import Base, uuid7, utcnow
 
 if TYPE_CHECKING:
     from app.models.item import Item
@@ -22,7 +20,7 @@ class User(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid7)
     email: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     full_name: Mapped[str] = mapped_column(String(64))
-    password: Mapped[str] = mapped_column(CHAR(128))
+    password: Mapped[str] = mapped_column(String(128))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=utcnow

@@ -45,29 +45,33 @@ def test_two_hashes_of_same_password_are_different():
 # ---------------------------------------------------------------------------
 
 
+_SECRET = "test-secret-key-that-is-at-least-32-bytes!!"
+_OTHER_SECRET = "other-secret-key-that-is-at-least-32-bytes!"
+
+
 def test_jwt_roundtrip():
     user_id = uuid7()
-    token = create_jwt(user_id, "secret", expires_minutes=30)
-    payload = decode_jwt(token, "secret")
+    token = create_jwt(user_id, _SECRET, expires_minutes=30)
+    payload = decode_jwt(token, _SECRET)
     assert payload["sub"] == str(user_id)
     assert "exp" in payload
     assert "iat" in payload
 
 
 def test_jwt_expired_raises():
-    token = create_jwt(uuid7(), "secret", expires_minutes=-1)
+    token = create_jwt(uuid7(), _SECRET, expires_minutes=-1)
     with pytest.raises(jwt.ExpiredSignatureError):
-        decode_jwt(token, "secret")
+        decode_jwt(token, _SECRET)
 
 
 def test_jwt_wrong_secret_raises():
-    token = create_jwt(uuid7(), "correct-secret", expires_minutes=30)
+    token = create_jwt(uuid7(), _SECRET, expires_minutes=30)
     with pytest.raises(jwt.InvalidTokenError):
-        decode_jwt(token, "wrong-secret")
+        decode_jwt(token, _OTHER_SECRET)
 
 
 def test_jwt_tampered_token_raises():
-    token = create_jwt(uuid7(), "secret", expires_minutes=30)
+    token = create_jwt(uuid7(), _SECRET, expires_minutes=30)
     tampered = token[:-4] + "xxxx"
     with pytest.raises(jwt.InvalidTokenError):
-        decode_jwt(tampered, "secret")
+        decode_jwt(tampered, _SECRET)
