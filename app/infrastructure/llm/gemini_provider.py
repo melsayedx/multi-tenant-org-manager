@@ -1,6 +1,6 @@
 from typing import AsyncIterator
 
-import google.genai as genai
+from google import genai
 
 from app.config import settings
 
@@ -46,7 +46,9 @@ class GeminiProvider:
         response = await session.send_message(message)
         return response.text
 
-    async def chat_stream(self, history: list[dict], message: str) -> AsyncIterator[str]:
+    async def chat_stream(
+        self, history: list[dict], message: str
+    ) -> AsyncIterator[str]:
         session = self._client.aio.chats.create(
             model=_MODEL,
             history=self._to_gemini_history(history),

@@ -8,11 +8,8 @@ Scenarios covered:
 4. Admin sees all items; member sees only their own
 """
 
-from unittest.mock import AsyncMock, patch
 
-import pytest
 from httpx import AsyncClient
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -38,7 +35,9 @@ async def _create_org(client: AsyncClient, headers: dict, name: str = "Org") -> 
     ).json()["org_id"]
 
 
-async def _invite(client: AsyncClient, org_id: str, email: str, role: str, headers: dict):
+async def _invite(
+    client: AsyncClient, org_id: str, email: str, role: str, headers: dict
+):
     await client.post(
         f"/organization/{org_id}/user",
         json={"email": email, "role": role},
@@ -96,7 +95,9 @@ async def test_member_cannot_view_audit_logs(client: AsyncClient, auth_headers: 
     await _invite(client, org_id, "member@test.com", "member", auth_headers)
     member_headers = {"Authorization": f"Bearer {member_token}"}
 
-    resp = await client.get(f"/organizations/{org_id}/audit-logs", headers=member_headers)
+    resp = await client.get(
+        f"/organizations/{org_id}/audit-logs", headers=member_headers
+    )
     assert resp.status_code == 403
 
 
@@ -164,12 +165,16 @@ async def test_non_member_cannot_list_items(client: AsyncClient, auth_headers: d
     assert resp.status_code == 403
 
 
-async def test_non_member_cannot_view_audit_logs(client: AsyncClient, auth_headers: dict):
+async def test_non_member_cannot_view_audit_logs(
+    client: AsyncClient, auth_headers: dict
+):
     org_id = await _create_org(client, auth_headers)
     outsider_token = await _register_and_login(client, "outsider@test.com", "Outsider")
     outsider_headers = {"Authorization": f"Bearer {outsider_token}"}
 
-    resp = await client.get(f"/organizations/{org_id}/audit-logs", headers=outsider_headers)
+    resp = await client.get(
+        f"/organizations/{org_id}/audit-logs", headers=outsider_headers
+    )
     assert resp.status_code == 403
 
 
@@ -178,7 +183,9 @@ async def test_non_member_cannot_view_audit_logs(client: AsyncClient, auth_heade
 # ---------------------------------------------------------------------------
 
 
-async def test_user_cannot_access_other_orgs_items(client: AsyncClient, auth_headers: dict):
+async def test_user_cannot_access_other_orgs_items(
+    client: AsyncClient, auth_headers: dict
+):
     """Admin of Org A should get 403 on Org B's item endpoint."""
     org_a_id = await _create_org(client, auth_headers, "Org A")
 
@@ -191,14 +198,18 @@ async def test_user_cannot_access_other_orgs_items(client: AsyncClient, auth_hea
     assert resp.status_code == 403
 
 
-async def test_user_cannot_access_other_orgs_audit_logs(client: AsyncClient, auth_headers: dict):
+async def test_user_cannot_access_other_orgs_audit_logs(
+    client: AsyncClient, auth_headers: dict
+):
     org_a_id = await _create_org(client, auth_headers, "Org A")
 
     user_b_token = await _register_and_login(client, "userb@test.com", "User B")
     user_b_headers = {"Authorization": f"Bearer {user_b_token}"}
     org_b_id = await _create_org(client, user_b_headers, "Org B")
 
-    resp = await client.get(f"/organizations/{org_b_id}/audit-logs", headers=auth_headers)
+    resp = await client.get(
+        f"/organizations/{org_b_id}/audit-logs", headers=auth_headers
+    )
     assert resp.status_code == 403
 
 
@@ -220,7 +231,9 @@ async def test_items_are_isolated_between_orgs(client: AsyncClient, auth_headers
     assert resp.json()["total"] == 0
 
 
-async def test_audit_logs_are_isolated_between_orgs(client: AsyncClient, auth_headers: dict):
+async def test_audit_logs_are_isolated_between_orgs(
+    client: AsyncClient, auth_headers: dict
+):
     """Org B admin should only see Org B's audit logs, not Org A's."""
     org_a_id = await _create_org(client, auth_headers, "Org A")
 
@@ -228,7 +241,9 @@ async def test_audit_logs_are_isolated_between_orgs(client: AsyncClient, auth_he
     user_b_headers = {"Authorization": f"Bearer {user_b_token}"}
     org_b_id = await _create_org(client, user_b_headers, "Org B")
 
-    resp = await client.get(f"/organizations/{org_b_id}/audit-logs", headers=user_b_headers)
+    resp = await client.get(
+        f"/organizations/{org_b_id}/audit-logs", headers=user_b_headers
+    )
     assert resp.status_code == 200
     logs = resp.json()
     # Only Org B's org_created log — none from Org A
@@ -241,7 +256,9 @@ async def test_audit_logs_are_isolated_between_orgs(client: AsyncClient, auth_he
 # ---------------------------------------------------------------------------
 
 
-async def test_admin_sees_all_items_from_all_members(client: AsyncClient, auth_headers: dict):
+async def test_admin_sees_all_items_from_all_members(
+    client: AsyncClient, auth_headers: dict
+):
     org_id = await _create_org(client, auth_headers)
 
     member_token = await _register_and_login(client, "member@test.com", "Member")
@@ -264,7 +281,9 @@ async def test_admin_sees_all_items_from_all_members(client: AsyncClient, auth_h
     assert resp.json()["total"] == 2
 
 
-async def test_member_only_sees_own_items_not_admin_items(client: AsyncClient, auth_headers: dict):
+async def test_member_only_sees_own_items_not_admin_items(
+    client: AsyncClient, auth_headers: dict
+):
     org_id = await _create_org(client, auth_headers)
 
     member_token = await _register_and_login(client, "member@test.com", "Member")

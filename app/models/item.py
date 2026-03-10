@@ -4,10 +4,11 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, func, DateTime
+from sqlalchemy import DateTime, ForeignKey, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.models.base import Base, uuid7, utcnow
+
+from app.models.base import Base, utcnow, uuid7
 
 if TYPE_CHECKING:
     from app.models.organization import Organization
@@ -21,10 +22,16 @@ class Item(Base):
     org_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), index=True)
     created_by: Mapped[UUID] = mapped_column(ForeignKey("users.id"), index=True)
     item_details: Mapped[dict] = mapped_column(JSONB, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=utcnow
+    )
 
-    organization: Mapped[Organization] = relationship(back_populates="items", lazy="raise")
+    organization: Mapped[Organization] = relationship(
+        back_populates="items", lazy="raise"
+    )
     creator: Mapped[User] = relationship(
         back_populates="items", foreign_keys=[created_by], lazy="raise"
     )

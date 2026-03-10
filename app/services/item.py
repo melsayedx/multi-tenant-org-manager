@@ -8,11 +8,15 @@ from app.repositories.item import ItemRepository
 
 
 class ItemService:
-    def __init__(self, item_repo: ItemRepository, audit_repo: AuditLogRepository) -> None:
+    def __init__(
+        self, item_repo: ItemRepository, audit_repo: AuditLogRepository
+    ) -> None:
         self.item_repo = item_repo
         self.audit_repo = audit_repo
 
-    async def create_item(self, org_id: UUID, user_id: UUID, item_details: dict) -> Item:
+    async def create_item(
+        self, org_id: UUID, user_id: UUID, item_details: dict
+    ) -> Item:
         item = Item(org_id=org_id, created_by=user_id, item_details=item_details)
         item = await self.item_repo.create(item)
         await self.audit_repo.create(

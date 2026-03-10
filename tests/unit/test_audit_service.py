@@ -1,7 +1,5 @@
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock
-
-import pytest
+from unittest.mock import AsyncMock
 
 from app.core.utils import uuid7
 from app.models.audit_log import AuditLog

@@ -1,10 +1,9 @@
 import pytest
-from app.core.utils import uuid7
-
 from sqlalchemy.exc import IntegrityError
 
 from app.core.exceptions import ConflictException, NotAuthenticatedException
 from app.core.security import hash_password
+from app.core.utils import uuid7
 from app.models.user import User
 from app.schemas.auth import LoginRequest, UserCreate
 from app.services.auth import AuthService
@@ -88,22 +87,32 @@ def test_password_validation_success():
     user = UserCreate(email="test@test.com", password="Strong123!", full_name="Test")
     assert user.password == "Strong123!"
 
+
 def test_password_validation_no_uppercase_raises():
     from pydantic import ValidationError
+
     with pytest.raises(ValidationError, match="uppercase"):
         UserCreate(email="test@test.com", password="weak123!", full_name="Test")
 
+
 def test_password_validation_no_number_raises():
     from pydantic import ValidationError
+
     with pytest.raises(ValidationError, match="number"):
         UserCreate(email="test@test.com", password="Weakpassword!", full_name="Test")
 
+
 def test_password_validation_no_special_char_raises():
     from pydantic import ValidationError
+
     with pytest.raises(ValidationError, match="special character"):
         UserCreate(email="test@test.com", password="WeakPassword123", full_name="Test")
 
+
 def test_password_validation_too_short_raises():
     from pydantic import ValidationError
-    with pytest.raises(ValidationError, match="String should have at least 8 characters"):
+
+    with pytest.raises(
+        ValidationError, match="String should have at least 8 characters"
+    ):
         UserCreate(email="test@test.com", password="Wk1!", full_name="Test")

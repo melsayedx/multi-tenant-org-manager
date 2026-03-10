@@ -44,7 +44,9 @@ class OrgService:
     async def invite_user(
         self, org_id: UUID, email: str, role: str, inviter_id: UUID
     ) -> Membership:
-        user, existing = await self.membership_repo.get_user_and_membership(email, org_id)
+        user, existing = await self.membership_repo.get_user_and_membership(
+            email, org_id
+        )
         if not user:
             raise NotFoundException("User not found")
         if existing:

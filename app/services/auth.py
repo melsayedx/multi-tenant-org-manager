@@ -20,8 +20,8 @@ class AuthService:
 
         try:
             return await self.user_repo.create(user)
-        except IntegrityError:
-            raise ConflictException("Email already registered")
+        except IntegrityError as err:
+            raise ConflictException("Email already registered") from err
 
     async def login(
         self, data: LoginRequest, secret_key: str, expires_minutes: int

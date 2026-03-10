@@ -1,7 +1,6 @@
+import re
 from datetime import datetime
 from uuid import UUID
-
-import re
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
@@ -15,11 +14,15 @@ class UserCreate(BaseModel):
     @classmethod
     def validate_password(cls, v: str) -> str:
         if not re.search(r"[A-Z]", v):
-            raise ValueError("Password must contain at least one uppercase letter, e.g. A-Z")
+            raise ValueError(
+                "Password must contain at least one uppercase letter, e.g. A-Z"
+            )
         if not re.search(r"\d", v):
             raise ValueError("Password must contain at least one number, e.g. 0-9")
         if not re.search(r"[^A-Za-z0-9]", v):
-            raise ValueError("Password must contain at least one special character, e.g. !@#$%^&*")
+            raise ValueError(
+                "Password must contain at least one special character, e.g. !@#$%^&*"
+            )
         return v
 
 

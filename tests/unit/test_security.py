@@ -1,9 +1,8 @@
-import pytest
 import jwt
+import pytest
 from uuid_utils import uuid7
 
 from app.core.security import create_jwt, decode_jwt, hash_password, verify_password
-
 
 # ---------------------------------------------------------------------------
 # Password hashing — Argon2id
@@ -90,8 +89,9 @@ def test_jwt_invalid_uuid_raises_valueerror():
     """A valid JWT where 'sub' is not a valid UUID string format."""
     token = jwt.encode({"sub": "admin", "exp": 9999999999}, _SECRET, algorithm="HS256")
     payload = decode_jwt(token, _SECRET)
-    
+
     # dependencies.py calls UUID(payload["sub"])
     from uuid import UUID
+
     with pytest.raises(ValueError):
         UUID(payload["sub"])

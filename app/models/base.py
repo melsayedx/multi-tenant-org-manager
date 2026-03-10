@@ -1,5 +1,6 @@
-from app.core.utils import utcnow, uuid7
 from sqlalchemy.orm import DeclarativeBase
+
+from app.core.utils import utcnow, uuid7
 
 
 class Base(DeclarativeBase):

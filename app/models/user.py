@@ -7,7 +7,8 @@ from uuid import UUID
 from sqlalchemy import Computed, DateTime, Index, String, func
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.models.base import Base, uuid7, utcnow
+
+from app.models.base import Base, utcnow, uuid7
 
 if TYPE_CHECKING:
     from app.models.item import Item
@@ -21,7 +22,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     full_name: Mapped[str] = mapped_column(String(64))
     password: Mapped[str] = mapped_column(String(128))
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=utcnow
     )

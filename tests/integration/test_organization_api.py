@@ -1,7 +1,9 @@
 from httpx import AsyncClient
 
 
-async def test_create_organization_returns_org_id(client: AsyncClient, auth_headers: dict):
+async def test_create_organization_returns_org_id(
+    client: AsyncClient, auth_headers: dict
+):
     resp = await client.post(
         "/organization",
         json={"org_name": "My Org"},
@@ -18,12 +20,18 @@ async def test_create_organization_requires_auth(client: AsyncClient):
 
 async def test_invite_user_success(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
+        json={
+            "email": "member@test.com",
+            "password": "StrongPass123!",
+            "full_name": "Member",
+        },
     )
 
     resp = await client.post(
@@ -34,9 +42,13 @@ async def test_invite_user_success(client: AsyncClient, auth_headers: dict):
     assert resp.status_code == 201
 
 
-async def test_invite_nonexistent_user_returns_404(client: AsyncClient, auth_headers: dict):
+async def test_invite_nonexistent_user_returns_404(
+    client: AsyncClient, auth_headers: dict
+):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
     resp = await client.post(
@@ -47,14 +59,22 @@ async def test_invite_nonexistent_user_returns_404(client: AsyncClient, auth_hea
     assert resp.status_code == 404
 
 
-async def test_invite_existing_member_returns_409(client: AsyncClient, auth_headers: dict):
+async def test_invite_existing_member_returns_409(
+    client: AsyncClient, auth_headers: dict
+):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
+        json={
+            "email": "member@test.com",
+            "password": "StrongPass123!",
+            "full_name": "Member",
+        },
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -72,12 +92,18 @@ async def test_invite_existing_member_returns_409(client: AsyncClient, auth_head
 
 async def test_invite_requires_admin(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
+        json={
+            "email": "member@test.com",
+            "password": "StrongPass123!",
+            "full_name": "Member",
+        },
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -94,7 +120,11 @@ async def test_invite_requires_admin(client: AsyncClient, auth_headers: dict):
 
     await client.post(
         "/auth/register",
-        json={"email": "third@test.com", "password": "StrongPass123!", "full_name": "Third"},
+        json={
+            "email": "third@test.com",
+            "password": "StrongPass123!",
+            "full_name": "Third",
+        },
     )
     resp = await client.post(
         f"/organization/{org_id}/user",
@@ -106,14 +136,18 @@ async def test_invite_requires_admin(client: AsyncClient, auth_headers: dict):
 
 async def test_non_member_cannot_invite(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
-    outsider_token = (
-        await client.post(
-            "/auth/register",
-            json={"email": "outsider@test.com", "password": "StrongPass123!", "full_name": "Out"},
-        )
+    outsider_token = await client.post(
+        "/auth/register",
+        json={
+            "email": "outsider@test.com",
+            "password": "StrongPass123!",
+            "full_name": "Out",
+        },
     )
     outsider_token = (
         await client.post(
@@ -133,12 +167,18 @@ async def test_non_member_cannot_invite(client: AsyncClient, auth_headers: dict)
 
 async def test_list_users_returns_all_members(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
+        json={
+            "email": "member@test.com",
+            "password": "StrongPass123!",
+            "full_name": "Member",
+        },
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -157,12 +197,18 @@ async def test_list_users_returns_all_members(client: AsyncClient, auth_headers:
 
 async def test_list_users_requires_admin(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
+        json={
+            "email": "member@test.com",
+            "password": "StrongPass123!",
+            "full_name": "Member",
+        },
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -185,12 +231,18 @@ async def test_list_users_requires_admin(client: AsyncClient, auth_headers: dict
 
 async def test_search_users_returns_matching(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
     await client.post(
         "/auth/register",
-        json={"email": "alice@test.com", "password": "StrongPass123!", "full_name": "Alice Smith"},
+        json={
+            "email": "alice@test.com",
+            "password": "StrongPass123!",
+            "full_name": "Alice Smith",
+        },
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -209,9 +261,13 @@ async def test_search_users_returns_matching(client: AsyncClient, auth_headers: 
     assert body[0]["full_name"] == "Alice Smith"
 
 
-async def test_search_users_no_match_returns_empty(client: AsyncClient, auth_headers: dict):
+async def test_search_users_no_match_returns_empty(
+    client: AsyncClient, auth_headers: dict
+):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
     resp = await client.get(

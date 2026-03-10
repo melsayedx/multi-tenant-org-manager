@@ -23,14 +23,16 @@ class MembershipRepository:
         self, email: str, org_id: UUID
     ) -> tuple[User | None, Membership | None]:
         """Single query: fetch the user by email + their membership in org_id (if any)."""
-        row = (await self.session.execute(
-            select(User, Membership)
-            .outerjoin(
-                Membership,
-                (Membership.user_id == User.id) & (Membership.org_id == org_id),
+        row = (
+            await self.session.execute(
+                select(User, Membership)
+                .outerjoin(
+                    Membership,
+                    (Membership.user_id == User.id) & (Membership.org_id == org_id),
+                )
+                .where(User.email == email)
             )
-            .where(User.email == email)
-        )).first()
+        ).first()
 
         return row.tuple() if row else (None, None)
 

@@ -1,4 +1,3 @@
-import pytest
 
 from app.core.utils import uuid7
 from app.models.item import Item
@@ -17,7 +16,9 @@ async def test_create_item_returns_item(mock_item_repo, mock_audit_repo):
     item = Item(id=uuid7(), org_id=org_id, created_by=user_id, item_details=details)
     mock_item_repo.create.return_value = item
 
-    result = await _service(mock_item_repo, mock_audit_repo).create_item(org_id, user_id, details)
+    result = await _service(mock_item_repo, mock_audit_repo).create_item(
+        org_id, user_id, details
+    )
 
     assert result.item_details == details
     mock_item_repo.create.assert_called_once()

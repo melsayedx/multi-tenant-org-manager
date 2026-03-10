@@ -3,7 +3,9 @@ from httpx import AsyncClient
 
 async def test_create_item_returns_item_id(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
     resp = await client.post(
@@ -17,12 +19,18 @@ async def test_create_item_returns_item_id(client: AsyncClient, auth_headers: di
 
 async def test_create_item_requires_membership(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
     await client.post(
         "/auth/register",
-        json={"email": "outsider@test.com", "password": "StrongPass123!", "full_name": "Out"},
+        json={
+            "email": "outsider@test.com",
+            "password": "StrongPass123!",
+            "full_name": "Out",
+        },
     )
     outsider_token = (
         await client.post(
@@ -41,12 +49,18 @@ async def test_create_item_requires_membership(client: AsyncClient, auth_headers
 
 async def test_list_items_admin_sees_all(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
+        json={
+            "email": "member@test.com",
+            "password": "StrongPass123!",
+            "full_name": "Member",
+        },
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -79,12 +93,18 @@ async def test_list_items_admin_sees_all(client: AsyncClient, auth_headers: dict
 
 async def test_list_items_member_sees_own_only(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
     await client.post(
         "/auth/register",
-        json={"email": "member@test.com", "password": "StrongPass123!", "full_name": "Member"},
+        json={
+            "email": "member@test.com",
+            "password": "StrongPass123!",
+            "full_name": "Member",
+        },
     )
     await client.post(
         f"/organization/{org_id}/user",
@@ -119,7 +139,9 @@ async def test_list_items_member_sees_own_only(client: AsyncClient, auth_headers
 
 async def test_list_items_pagination(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
     for i in range(5):
@@ -142,12 +164,18 @@ async def test_list_items_pagination(client: AsyncClient, auth_headers: dict):
 
 async def test_list_items_requires_membership(client: AsyncClient, auth_headers: dict):
     org_id = (
-        await client.post("/organization", json={"org_name": "Org"}, headers=auth_headers)
+        await client.post(
+            "/organization", json={"org_name": "Org"}, headers=auth_headers
+        )
     ).json()["org_id"]
 
     await client.post(
         "/auth/register",
-        json={"email": "stranger@test.com", "password": "StrongPass123!", "full_name": "Stranger"},
+        json={
+            "email": "stranger@test.com",
+            "password": "StrongPass123!",
+            "full_name": "Stranger",
+        },
     )
     stranger_token = (
         await client.post(
